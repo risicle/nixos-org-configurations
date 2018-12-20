@@ -26,7 +26,16 @@ resource "aws_s3_bucket_policy" "releases" {
       "Resource": "arn:aws:s3:::nix-releases/*"
     },
     {
-      "Sid": "AllowUploadDebuginfoWrite",
+      "Sid": "AllowPublicList",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "*"
+      },
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::nix-releases"
+    },
+    {
+      "Sid": "AllowUpload",
       "Effect": "Allow",
       "Principal": {
         "AWS": "arn:aws:iam::080433136561:user/s3-upload-releases"
@@ -35,28 +44,7 @@ resource "aws_s3_bucket_policy" "releases" {
         "s3:PutObject",
         "s3:PutObjectAcl"
       ],
-      "Resource": "arn:aws:s3:::nix-releases/nixos/*"
-    },
-    {
-      "Sid": "AllowUploadDebuginfoRead",
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": "arn:aws:iam::080433136561:user/s3-upload-releases"
-      },
-      "Action": "s3:GetObject",
       "Resource": "arn:aws:s3:::nix-releases/*"
-    },
-    {
-      "Sid": "AllowUploadDebuginfoRead2",
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": "arn:aws:iam::080433136561:user/s3-upload-releases"
-      },
-      "Action": [
-        "s3:ListBucket",
-        "s3:GetBucketLocation"
-      ],
-      "Resource": "arn:aws:s3:::nix-releases"
     }
   ]
 }
