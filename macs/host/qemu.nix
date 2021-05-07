@@ -3,7 +3,7 @@
 let
   inherit (config.macosGuest.guest) threads cores sockets memoryInMegs
     ovmfCodeFile ovmfVarsFile cloverImage zvolName snapshotName
-    guestConfigDir persistentConfigDir;
+    guestConfigDir persistentConfigDir rootQcow2;
   inherit (lib) mkIf;
 
   zvolDevice = "/dev/zvol/${zvolName}";
@@ -36,9 +36,9 @@ in {
 
       serviceConfig.PrivateTmp = true;
 
-      preStart = ''
+      preStart = (lib.optionalString (zvolName != null) ''
         zfs rollback ${snapshot}
-
+      '') + ''
         # Create a cloud-init style cdrom
         rm -rf /tmp/cdr
         cp -r ${persistentConfigDir} /tmp/cdr
@@ -47,8 +47,13 @@ in {
         find .
         genisoimage -v -J -r -V CONFIG -o /tmp/config.iso .
       '';
-      postStop = "zfs rollback ${snapshot}";
-      script = ''
+      postStop = lib.optionalString (zvolName != null) "zfs rollback ${snapshot}";
+      script = let
+        rootDriveArg = if zvolName != null then
+            "-drive id=MacHDD,cache=unsafe,if=none,file=${zvolDevice},format=raw"
+          else
+            "-drive id=MacHDD,if=none,snapshot=on,file=${rootQcow2},format=qcow2";
+      in ''
         qemu-system-x86_64 \
             -enable-kvm \
             -cpu Penryn,kvm=on,vendor=GenuineIntel,+invtsc,vmware-cpuid-freq=on,+aes,+xsave,+avx,+xsaveopt,avx2,+smep \
@@ -64,7 +69,7 @@ in {
             -device ide-drive,bus=ide.2,drive=Clover \
             -drive id=Clover,if=none,snapshot=on,format=qcow2,file='${cloverImage}' \
             -device ide-drive,bus=ide.1,drive=MacHDD \
-            -drive id=MacHDD,cache=unsafe,if=none,file=${zvolDevice},format=raw \
+            ${rootDriveArg} \
             -device ide-drive,bus=ide.0,drive=config \
             -drive id=config,if=none,snapshot=on,media=cdrom,file=/tmp/config.iso \
             -netdev tap,id=net0,ifname=tap0,script=no,downscript=no -device e1000-82545em,netdev=net0,id=net0,mac=${config.macosGuest.guest.MACAddress} \

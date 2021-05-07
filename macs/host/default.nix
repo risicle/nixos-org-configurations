@@ -2,6 +2,8 @@
 { pkgs, lib, config, ... }:
 let
   inherit (lib) mkOption types;
+
+  cfg = config.macosGuest;
 in {
   options = {
     monitorama = {
@@ -147,12 +149,22 @@ in {
           default = "/var/lib/macos-vm-persistent-config";
         };
 
+        rootQcow2 = mkOption {
+          type = with types; nullOr str;
+          description = ''
+            Location of qcow2 file containing the root disk image.
+          '';
+          example = "/home/foo/MacHDD.qcow2";
+          default = null;
+        };
+
         zvolName = mkOption {
-          type = types.str;
+          type = with types; nullOr str;
           description = ''
             Name of the zvol containing the root disk image.
           '';
           example = "rpool/my-disk-image";
+          default = null;
         };
 
         snapshotName = mkOption {
@@ -216,6 +228,16 @@ in {
 
       };
     };
+  };
+
+  config = lib.mkIf cfg.enable {
+    assertions = [{
+      assertion = cfg.guest.zvolName != null || cfg.guest.rootQcow2 != null;
+      message = "Must set one of macosGuest.zvolName or macosGuest.guest.rootQcow2";
+    } {
+      assertion = cfg.guest.zvolName == null || cfg.guest.rootQcow2 == null;
+      message = "Cannot set both macosGuest.guest.zvolName and macosGuest.guest.rootQcow2";
+    }];
   };
 
   imports = [
