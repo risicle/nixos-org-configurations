@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 
-LOGHOST=10.172.170.1
-echo "apply started at $(date)" | nc -w0 -u $LOGHOST 1514
+[ -e /Volumes/CONFIG/LOGHOST ] && LOGHOST=$(cat /Volumes/CONFIG/LOGHOST)
+if [ "$LOGHOST" ] ; then
+    echo "apply started at $(date)" | nc -w0 -u $LOGHOST 1514
 
-printf "\n*.*\t@$LOGHOST:1514\n" | tee -a /etc/syslog.conf
-pkill syslog
-pkill asl
+    printf "\n*.*\t@$LOGHOST:1514\n" | tee -a /etc/syslog.conf
+    pkill syslog
+    pkill asl
 
-exec 3>&1
-exec 2> >(nc -u $LOGHOST 1514)
-exec 1>&2
+    exec 3>&1
+    exec 2> >(nc -u $LOGHOST 1514)
+    exec 1>&2
+fi
 
 PS4='${BASH_SOURCE}::${FUNCNAME[0]}::$LINENO '
 set -o pipefail
