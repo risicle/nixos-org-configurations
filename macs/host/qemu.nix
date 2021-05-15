@@ -64,6 +64,7 @@ in {
             "-drive id=MacHDD,if=none,file=/var/macos/img.qcow2,format=qcow2";
       in ''
         qemu-system-x86_64 \
+            -s \
             -enable-kvm \
             -cpu Penryn,kvm=on,vendor=GenuineIntel,+invtsc,vmware-cpuid-freq=on,+aes,+xsave,+avx,+xsaveopt,avx2,+smep \
             -machine pc-q35-2.9 \
