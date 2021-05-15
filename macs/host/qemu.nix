@@ -70,6 +70,7 @@ in {
             -machine pc-q35-2.9 \
             -smp cpus=${toString (cores * threads * sockets)},cores=${toString cores},threads=${toString threads},sockets=${toString sockets} \
             -m ${toString memoryInMegs} \
+            -monitor telnet:0.0.0.0:4445,server=on,wait=off \
             -usb -device usb-kbd -device usb-tablet \
             -device isa-applesmc,osk="ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc" \
             -drive if=pflash,format=raw,readonly,file=${ovmfCodeFile} \
