@@ -46,19 +46,23 @@ in {
         cd /tmp/cdr
         find .
         genisoimage -v -J -r -V CONFIG -o /tmp/config.iso .
-      '';
+
+        mkdir -p /var/macos
+        if ! [ -e /var/macos/ovmfVarsFile ] ; then
+            cp ${ovmfVarsFile} /var/macos/ovmfVarsFile
+        fi
+      '' + (lib.optionalString (zvolName == null) ''
+        if ! [ -e /var/macos/img.qcow2 ] ; then
+            qemu-img create -f qcow2 -o backing_file=${rootQcow2} /var/macos/img.qcow2
+        fi
+      '');
       postStop = lib.optionalString (zvolName != null) "zfs rollback ${snapshot}";
       script = let
         rootDriveArg = if zvolName != null then
             "-drive id=MacHDD,cache=unsafe,if=none,file=${zvolDevice},format=raw"
           else
-            "-drive id=MacHDD,if=none,snapshot=on,file=${rootQcow2},format=qcow2";
+            "-drive id=MacHDD,if=none,file=/var/macos/img.qcow2,format=qcow2";
       in ''
-        mkdir -p /var/macos
-        if ! [ -e /var/macos/ovmfVarsFile ] ; then
-            cp ${ovmfVarsFile} /var/macos/ovmfVarsFile
-        fi
-
         qemu-system-x86_64 \
             -enable-kvm \
             -cpu Penryn,kvm=on,vendor=GenuineIntel,+invtsc,vmware-cpuid-freq=on,+aes,+xsave,+avx,+xsaveopt,avx2,+smep \

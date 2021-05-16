@@ -26,6 +26,10 @@ function finish {
 }
 trap finish EXIT
 
+if [ -e /nix ] ; then
+    exit
+fi
+
 cat <<EOF | tee -a /etc/ssh/sshd_config
 PermitRootLogin prohibit-password
 PasswordAuthentication no
