@@ -55,6 +55,7 @@ in {
             "-drive id=MacHDD,if=none,snapshot=on,file=${rootQcow2},format=qcow2";
       in ''
         if [ ! -e /var/macos/ovmfVarsFile ] ; then
+            mkdir -p /var/macos
             cp ${ovmfVarsFile} /var/macos/ovmfVarsFile
         fi
 
