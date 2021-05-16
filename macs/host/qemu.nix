@@ -54,6 +54,10 @@ in {
           else
             "-drive id=MacHDD,if=none,snapshot=on,file=${rootQcow2},format=qcow2";
       in ''
+        if [ ! -e /var/macos/ovmfVarsFile ] ; then
+            cp ${ovmfVarsFile} /var/macos/ovmfVarsFile
+        fi
+
         qemu-system-x86_64 \
             -enable-kvm \
             -cpu Penryn,kvm=on,vendor=GenuineIntel,+invtsc,vmware-cpuid-freq=on,+aes,+xsave,+avx,+xsaveopt,avx2,+smep \
@@ -63,7 +67,7 @@ in {
             -usb -device usb-kbd -device usb-tablet \
             -device isa-applesmc,osk="ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc" \
             -drive if=pflash,format=raw,readonly,file=${ovmfCodeFile} \
-            -drive if=pflash,format=raw,snapshot=on,file=${ovmfVarsFile} \
+            -drive if=pflash,format=raw,file=/var/macos/ovmfVarsFile \
             -smbios type=2 \
             -device ich9-intel-hda -device hda-duplex \
             -device ide-drive,bus=ide.2,drive=Clover \
