@@ -46,7 +46,16 @@ in {
         cd /tmp/cdr
         find .
         genisoimage -v -J -r -V CONFIG -o /tmp/config.iso .
-      '' + (if persistentOvmfVarsPath == null then "ovmfVarsFile=${ovmfVarsFile}\n" else ''
+      '';
+
+      postStop = lib.optionalString (zvolName != null) "zfs rollback ${snapshot}";
+
+      script = let
+        rootDriveArg = if zvolName != null then
+            "-drive id=MacHDD,cache=unsafe,if=none,file=${zvolDevice},format=raw"
+          else
+            "-drive id=MacHDD,if=none,file=$rootQcow2Path,format=qcow2";
+      in (if persistentOvmfVarsPath == null then "ovmfVarsFile=${ovmfVarsFile}\n" else ''
         ovmfVarsPath=${persistentOvmfVarsPath}
         mkdir -p $(dirname $ovmfVarsPath)
         if ! [ -e $ovmfVarsPath ] ; then
@@ -61,16 +70,7 @@ in {
             fi
           ''
         )
-      );
-
-      postStop = lib.optionalString (zvolName != null) "zfs rollback ${snapshot}";
-
-      script = let
-        rootDriveArg = if zvolName != null then
-            "-drive id=MacHDD,cache=unsafe,if=none,file=${zvolDevice},format=raw"
-          else
-            "-drive id=MacHDD,if=none,file=$rootQcow2Path,format=qcow2";
-      in ''
+      ) + ''
         qemu-system-x86_64 \
             -s \
             -enable-kvm \
