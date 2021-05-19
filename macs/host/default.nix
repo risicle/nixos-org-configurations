@@ -158,6 +158,15 @@ in {
           default = null;
         };
 
+        persistentRootQcow2Path = mkOption {
+          type = with types; nullOr str;
+          description = ''
+            Location to keep persistent qcow2 layer extending rootQcow2
+          '';
+          example = "/home/foo/MacHDD.qcow2";
+          default = null;
+        };
+
         zvolName = mkOption {
           type = with types; nullOr str;
           description = ''
@@ -214,6 +223,14 @@ in {
           '';
         };
 
+        persistentOvmfVarsPath = mkOption {
+          type = with types; nullOr str;
+          description = ''
+            Path to keep persistent copy of ovmfVarsFile
+          '';
+          default = null;
+        };
+
         cloverImage = mkOption {
           type = types.path;
           default = (pkgs.callPackage ./clover.qcow2.nix {
@@ -237,6 +254,9 @@ in {
     } {
       assertion = cfg.guest.zvolName == null || cfg.guest.rootQcow2 == null;
       message = "Cannot set both macosGuest.guest.zvolName and macosGuest.guest.rootQcow2";
+    } {
+      assertion = cfg.guest.persistentRootQcow2Path != null -> cfg.guest.rootQcow2 != null;
+      message = "Must set both macosGuest.guest.rootQcow2 for macosGuest.guest.persistentRootQcow2Path to make sense";
     }];
   };
 

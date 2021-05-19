@@ -2,8 +2,8 @@
 { config, lib, pkgs, ... }:
 let
   inherit (config.macosGuest.guest) threads cores sockets memoryInMegs
-    ovmfCodeFile ovmfVarsFile cloverImage zvolName snapshotName
-    guestConfigDir persistentConfigDir rootQcow2;
+    ovmfCodeFile ovmfVarsFile persistentOvmfVarsPath cloverImage zvolName snapshotName
+    guestConfigDir persistentConfigDir rootQcow2 persistentRootQcow2Path;
   inherit (lib) mkIf;
 
   zvolDevice = "/dev/zvol/${zvolName}";
@@ -46,22 +46,30 @@ in {
         cd /tmp/cdr
         find .
         genisoimage -v -J -r -V CONFIG -o /tmp/config.iso .
+      '' + (if persistentOvmfVarsPath == null then "ovmfVarsFile=${ovmfVarsFile}\n" else ''
+        ovmfVarsPath=${persistentOvmfVarsPath}
+        mkdir -p $(dirname $ovmfVarsPath)
+        if ! [ -e $ovmfVarsPath ] ; then
+            cp ${ovmfVarsFile} $ovmfVarsPath
+        fi
+      '') + (lib.optionalString (zvolName == null) (
+          if (persistentRootQcow2Path == null) then "rootQcow2Path=${rootQcow2}\n" else ''
+            rootQcow2Path=${persistentRootQcow2Path}
+            mkdir -p $(dirname $rootQcow2Path)
+            if ! [ -e $rootQcow2Path ] ; then
+                qemu-img create -f qcow2 -o backing_file=${rootQcow2} $rootQcow2Path
+            fi
+          ''
+        )
+      );
 
-        mkdir -p /var/macos
-        if ! [ -e /var/macos/ovmfVarsFile ] ; then
-            cp ${ovmfVarsFile} /var/macos/ovmfVarsFile
-        fi
-      '' + (lib.optionalString (zvolName == null) ''
-        if ! [ -e /var/macos/img.qcow2 ] ; then
-            qemu-img create -f qcow2 -o backing_file=${rootQcow2} /var/macos/img.qcow2
-        fi
-      '');
       postStop = lib.optionalString (zvolName != null) "zfs rollback ${snapshot}";
+
       script = let
         rootDriveArg = if zvolName != null then
             "-drive id=MacHDD,cache=unsafe,if=none,file=${zvolDevice},format=raw"
           else
-            "-drive id=MacHDD,if=none,file=/var/macos/img.qcow2,format=qcow2";
+            "-drive id=MacHDD,if=none,file=$rootQcow2Path,format=qcow2";
       in ''
         qemu-system-x86_64 \
             -s \
@@ -74,7 +82,7 @@ in {
             -usb -device usb-kbd -device usb-tablet \
             -device isa-applesmc,osk="ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc" \
             -drive if=pflash,format=raw,readonly,file=${ovmfCodeFile} \
-            -drive if=pflash,format=raw,file=/var/macos/ovmfVarsFile \
+            -drive if=pflash,format=raw,file=$ovmfVarsPath \
             -smbios type=2 \
             -device ich9-intel-hda -device hda-duplex \
             -device ide-drive,bus=ide.2,drive=Clover \
