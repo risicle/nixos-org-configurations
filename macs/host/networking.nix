@@ -99,7 +99,9 @@ in {
         '';
     };
 
-    systemd.services.forward-wg0-ssh-to-guest = {
+    systemd.services.forward-wg0-ssh-to-guest = rec {
+      requires = [ "network-online.target" ];
+      after = requires;
       wantedBy = [ "multi-user.target" ];
       script = ''
           set -euxo pipefail
@@ -107,7 +109,9 @@ in {
         '';
     };
 
-    systemd.services.forward-wg0-prometheus-to-guest = {
+    systemd.services.forward-wg0-prometheus-to-guest = rec {
+      requires = [ "network-online.target" ];
+      after = requires;
       wantedBy = [ "multi-user.target" ];
       script = ''
           set -euxo pipefail
