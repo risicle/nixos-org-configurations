@@ -50,8 +50,8 @@ in
 
   system.activationScripts.postActivation.text = ''
     printf "disabling spotlight indexing... "
-    mdutil -i off -d / &> /dev/null
-    mdutil -E / &> /dev/null
+    mdutil -i off -a &> /dev/null
+    mdutil -E -a &> /dev/null
     echo "ok"
 
     printf "configuring ssh keys for hydra on the root account... "
