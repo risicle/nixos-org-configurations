@@ -54,6 +54,10 @@ in
     mdutil -E -a &> /dev/null
     echo "ok"
 
+    printf "disabling screensaver... "
+    defaults write com.apple.screensaver loginWindowIdleTime 0
+    echo "ok"
+
     printf "configuring ssh keys for hydra on the root account... "
     mkdir -p ~root/.ssh
     cp -f /etc/per-user/root/ssh/authorized_keys ~root/.ssh/authorized_keys
