@@ -30,6 +30,20 @@ if [ -e /nix ] ; then
     exit
 fi
 
+# copied from activationScripts
+printf "disabling spotlight indexing... "
+mdutil -i off -a &> /dev/null
+mdutil -E -a &> /dev/null
+echo "ok"
+
+printf "disabling screensaver... "
+defaults write com.apple.screensaver loginWindowIdleTime 0
+echo "ok"
+
+printf "disabling automatic updates... "
+defaults write com.apple.SoftwareUpdate AutomaticDownload -boolean FALSE
+echo "ok"
+
 cat <<EOF | tee -a /etc/ssh/sshd_config
 PermitRootLogin prohibit-password
 PasswordAuthentication no
