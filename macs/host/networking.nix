@@ -50,12 +50,14 @@ in {
     services.dhcpd4 = {
       enable = true;
       interfaces = [ "tap0" ];
-      extraConfig = ''
+      extraConfig = let
+        joinedNameservers = lib.concatStringsSep "," config.networking.nameservers;
+      in ''
         authoritative;
         subnet ${subnetIP} netmask 255.255.255.0 {
           option routers ${routerIP};
           option broadcast-address ${broadcastIP};
-          option domain-name-servers ${routerIP};
+          option domain-name-servers ${joinedNameservers};
 
           group {
             host builder {
@@ -64,20 +66,6 @@ in {
             }
           }
         }
-      '';
-    };
-
-    services.kresd = {
-      enable = true;
-      listenPlain = [ "[::1]:53" "127.0.0.1:53" "${routerIP}:53" ];
-      extraConfig = ''
-        modules = {
-          'policy',   -- Block queries to local zones/bad sites
-          'stats',    -- Track internal statistics
-          'predict',  -- Prefetch expiring/frequent records
-        }
-        -- Smaller cache size
-        cache.size = 10 * MB
       '';
     };
 
