@@ -54,7 +54,7 @@ in {
         rootDriveArg = if zvolName != null then
             "-drive id=MacHDD,cache=unsafe,if=none,file=${zvolDevice},format=raw"
           else
-            "-drive id=MacHDD,if=none,file=$rootQcow2Path,format=qcow2";
+            "-drive id=MacHDD,cache=unsafe,if=none,file=$rootQcow2Path,format=qcow2";
       in (if persistentOvmfVarsPath == null then "ovmfVarsFile=${ovmfVarsFile}\n" else ''
         ovmfVarsPath=${persistentOvmfVarsPath}
         mkdir -p $(dirname $ovmfVarsPath)
@@ -66,7 +66,9 @@ in {
             rootQcow2Path=${persistentRootQcow2Path}
             mkdir -p $(dirname $rootQcow2Path)
             if ! [ -e $rootQcow2Path ] ; then
-                qemu-img create -f qcow2 -o backing_file=${rootQcow2} $rootQcow2Path
+                qemu-img create -f qcow2 \
+                  -o extended_l2=on,preallocation=metadata,lazy_refcounts=on,backing_file=${rootQcow2} \
+                  $rootQcow2Path
             fi
           ''
         )
