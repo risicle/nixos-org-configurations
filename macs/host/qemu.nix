@@ -54,7 +54,7 @@ in {
         rootDriveArg = if zvolName != null then
             "-drive id=MacHDD,cache=unsafe,if=none,file=${zvolDevice},format=raw"
           else
-            "-drive id=MacHDD,cache=unsafe,if=none,file=$rootQcow2Path,format=qcow2";
+            ("-drive id=MacHDD,cache=unsafe,if=none,file=$rootQcow2Path,format=qcow2" + lib.optionalString (persistentRootQcow2Path == null) ",snapshot=on");
       in (if persistentOvmfVarsPath == null then "ovmfVarsFile=${ovmfVarsFile}\n" else ''
         ovmfVarsPath=${persistentOvmfVarsPath}
         mkdir -p $(dirname $ovmfVarsPath)
@@ -70,6 +70,7 @@ in {
                   -o extended_l2=on,preallocation=metadata,lazy_refcounts=on,backing_file=${rootQcow2} \
                   $rootQcow2Path
             fi
+            echo "Generated persistent image $rootQcow2Path"
           ''
         )
       ) + ''
