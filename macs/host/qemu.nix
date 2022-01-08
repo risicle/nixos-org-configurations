@@ -67,7 +67,7 @@ in {
             mkdir -p $(dirname $rootQcow2Path)
             if ! [ -e $rootQcow2Path ] ; then
                 qemu-img create -f qcow2 \
-                  -o extended_l2=on,preallocation=metadata,lazy_refcounts=on,backing_file=${rootQcow2} \
+                  -o extended_l2=on,preallocation=metadata,lazy_refcounts=on,backing_file=${rootQcow2},backing_fmt=qcow2 \
                   $rootQcow2Path
             fi
             echo "Generated persistent image $rootQcow2Path"
