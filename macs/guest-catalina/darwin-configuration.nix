@@ -40,6 +40,8 @@ in
   nix.extraOptions = ''
     min-free = ${toString (30*1024*1024*1024)}
     max-free = ${toString (50*1024*1024*1024)}
+
+    experimental-features = nix-command
   '';
 
   environment.etc."per-user/root/ssh/authorized_keys".text = concatStringsSep "\n"

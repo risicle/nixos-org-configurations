@@ -75,7 +75,7 @@ echo "%admin ALL = NOPASSWD: ALL" | tee /etc/sudoers.d/passwordless
       sleep 1
     done
 
-    curl -vL https://nixos.org/releases/nix/nix-2.3.10/install > ~nixos/install-nix
+    curl -vL https://nixos.org/releases/nix/nix-2.8.1/install > ~nixos/install-nix
     chmod +rwx ~nixos/install-nix
     cat /dev/null | sudo -i -H -u nixos -- sh ~nixos/install-nix --daemon --darwin-use-unencrypted-nix-store-volume
 )
@@ -97,14 +97,14 @@ echo "%admin ALL = NOPASSWD: ALL" | tee /etc/sudoers.d/passwordless
     # If me, Graham, the author of the multi-user darwin installer can't
     # even figure this out, how can I possibly expect anybody else to know.
     nix-channel --add https://github.com/LnL7/nix-darwin/archive/master.tar.gz darwin
-    nix-channel --add https://nixos.org/channels/nixpkgs-20.09-darwin nixpkgs
+    nix-channel --add https://nixos.org/channels/nixpkgs-22.05-darwin nixpkgs
     nix-channel --update
 
     sudo -i -H -u nixos -- nix-channel --add https://github.com/LnL7/nix-darwin/archive/master.tar.gz darwin
-    sudo -i -H -u nixos -- nix-channel --add https://nixos.org/channels/nixpkgs-20.09-darwin nixpkgs
+    sudo -i -H -u nixos -- nix-channel --add https://nixos.org/channels/nixpkgs-22.05-darwin nixpkgs
     sudo -i -H -u nixos -- nix-channel --update
 
-    export NIX_PATH=$NIX_PATH:darwin=https://github.com/LnL7/nix-darwin/archive/master.tar.gz
+    export NIX_PATH=nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixpkgs:darwin=https://github.com/LnL7/nix-darwin/archive/master.tar.gz
 
     installer=$(nix-build https://github.com/LnL7/nix-darwin/archive/master.tar.gz -A installer --no-out-link)
     set +e
@@ -127,7 +127,7 @@ echo "%admin ALL = NOPASSWD: ALL" | tee /etc/sudoers.d/passwordless
     done
     popd
 
-    while ! sudo -i -H -u nixos -- nix ping-store; do
+    while ! sudo -i -H -u nixos -- nix store ping --extra-experimental-features nix-command ; do
         cat /var/log/nix-daemon.log
         sleep 1
     done
