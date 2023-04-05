@@ -97,11 +97,11 @@ echo "%admin ALL = NOPASSWD: ALL" | tee /etc/sudoers.d/passwordless
     # If me, Graham, the author of the multi-user darwin installer can't
     # even figure this out, how can I possibly expect anybody else to know.
     nix-channel --add https://github.com/LnL7/nix-darwin/archive/master.tar.gz darwin
-    nix-channel --add https://nixos.org/channels/nixpkgs-22.05-darwin nixpkgs
+    nix-channel --add https://nixos.org/channels/nixpkgs-22.11-darwin nixpkgs
     nix-channel --update
 
     sudo -i -H -u nixos -- nix-channel --add https://github.com/LnL7/nix-darwin/archive/master.tar.gz darwin
-    sudo -i -H -u nixos -- nix-channel --add https://nixos.org/channels/nixpkgs-22.05-darwin nixpkgs
+    sudo -i -H -u nixos -- nix-channel --add https://nixos.org/channels/nixpkgs-22.11-darwin nixpkgs
     sudo -i -H -u nixos -- nix-channel --update
 
     export NIX_PATH=nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixpkgs:darwin=https://github.com/LnL7/nix-darwin/archive/master.tar.gz
