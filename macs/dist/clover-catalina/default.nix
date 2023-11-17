@@ -52,30 +52,24 @@ lib.fix (self: {
     cp --no-preserve=mode ${self.startup-nsh} startup.nsh
     guestfish --remote copy-in startup.nsh /
 
-    guestfish --remote copy-in work/EFI/CLOVER/drivers/off/AppleImageCodec.efi /ESP/EFI/CLOVER/drivers/UEFI
-    guestfish --remote copy-in work/EFI/CLOVER/drivers/off/FirmwareVolume.efi /ESP/EFI/CLOVER/drivers/UEFI
-    guestfish --remote copy-in work/EFI/CLOVER/drivers/off/AppleKeyAggregator.efi /ESP/EFI/CLOVER/drivers/UEFI
-    guestfish --remote copy-in work/EFI/CLOVER/drivers/off/AppleUITheme.efi /ESP/EFI/CLOVER/drivers/UEFI
     guestfish --remote copy-in work/EFI/CLOVER/drivers/off/AppleKeyFeeder.efi /ESP/EFI/CLOVER/drivers/UEFI
     guestfish --remote copy-in work/EFI/CLOVER/drivers/off/HashServiceFix.efi /ESP/EFI/CLOVER/drivers/UEFI
+    guestfish --remote copy-in work/EFI/CLOVER/drivers/off/FSInject.efi /ESP/EFI/CLOVER/drivers/UEFI
 
     guestfish --remote copy-in work/EFI/CLOVER/drivers/UEFI/VBoxHfs.efi /ESP/EFI/CLOVER/drivers/UEFI
-    guestfish --remote copy-in work/EFI/CLOVER/drivers/UEFI/SMCHelper.efi /ESP/EFI/CLOVER/drivers/UEFI
-    guestfish --remote copy-in work/EFI/CLOVER/drivers/UEFI/FSInject.efi /ESP/EFI/CLOVER/drivers/UEFI
     guestfish --remote copy-in work/EFI/CLOVER/drivers/UEFI/AptioInputFix.efi /ESP/EFI/CLOVER/drivers/UEFI
 
     guestfish --remote copy-in work/EFI/CLOVER/tools /ESP/EFI/CLOVER
     substituteAll ${./config.plist.template} work/config.plist
     guestfish --remote copy-in work/config.plist /ESP/EFI/CLOVER
-    guestfish --remote rm /ESP/EFI/CLOVER/drivers/UEFI/AudioDxe.efi
     guestfish --remote umount-all
     guestfish --remote shutdown
     mv clover2.img $out
   '';
-  cloverVersion = "5130";
+  cloverVersion = "5156";
   clover-iso-7z = fetchurl {
     url = "https://github.com/CloverHackyColor/CloverBootloader/releases/download/${self.cloverVersion}/Clover-${self.cloverVersion}-X64.iso.7z";
-    sha256 = "0fv0mw03fjqvlhrnv9zixp88dm3ak4sjq84kfs7m6zglq83ar2lx";
+    sha256 = "14i4bz9v8r96wacnrs4bi403jy4vns1if08ls23g66im548ankk6";
   };
   clover-iso = runCommand "clover.iso" { buildInputs = [ p7zip ]; } ''
     7z x ${self.clover-iso-7z}
