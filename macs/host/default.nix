@@ -243,6 +243,14 @@ in {
           '';
         };
 
+        nixify = mkOption {
+          default = true;
+          type = types.bool;
+          description = ''
+            Whether to nixify the darwin environment following boot
+          '';
+        };
+
       };
     };
   };

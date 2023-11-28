@@ -3,7 +3,7 @@
 let
   inherit (config.macosGuest.guest) threads cores sockets memoryInMegs
     ovmfCodeFile ovmfVarsFile persistentOvmfVarsPath cloverImage zvolName snapshotName
-    guestConfigDir persistentConfigDir rootQcow2 persistentRootQcow2Path;
+    guestConfigDir persistentConfigDir rootQcow2 persistentRootQcow2Path nixify;
   inherit (lib) mkIf;
 
   zvolDevice = "/dev/zvol/${zvolName}";
@@ -55,6 +55,10 @@ in {
             "-drive id=MacHDD,cache=unsafe,if=none,file=${zvolDevice},format=raw"
           else
             ("-drive id=MacHDD,cache=unsafe,if=none,file=$rootQcow2Path,format=qcow2" + lib.optionalString (persistentRootQcow2Path == null) ",snapshot=on");
+        configDriveArg = lib.optionalString nixify ''
+          -device ide-cd,bus=ide.0,drive=config \
+          -drive id=config,if=none,snapshot=on,media=cdrom,file=/tmp/config.iso \
+        '';
       in (if persistentOvmfVarsPath == null then "ovmfVarsFile=${ovmfVarsFile}\n" else ''
         ovmfVarsPath=${persistentOvmfVarsPath}
         mkdir -p $(dirname $ovmfVarsPath)
@@ -92,8 +96,7 @@ in {
             -drive id=Clover,if=none,snapshot=on,format=qcow2,file='${cloverImage}' \
             -device ide-hd,bus=ide.1,drive=MacHDD \
             ${rootDriveArg} \
-            -device ide-cd,bus=ide.0,drive=config \
-            -drive id=config,if=none,snapshot=on,media=cdrom,file=/tmp/config.iso \
+            ${configDriveArg} \
             -netdev tap,id=net0,ifname=tap0,script=no,downscript=no -device e1000-82545em,netdev=net0,id=net0,mac=${config.macosGuest.guest.MACAddress} \
             -vnc 127.0.0.1:0 \
             -no-reboot
