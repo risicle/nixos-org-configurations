@@ -310,6 +310,12 @@ https://gist.github.com/grahamc/126b1a28d50d99db315fb5b6fce551c7
 as well. This image is used as the basis for ofborg and hydra
 builders.
 
+Config checklist:
+ - all software update options off
+ - screensaver off
+ - energy saver options all off
+ - timezone correct
+
 ---
 
 Specializing the image
