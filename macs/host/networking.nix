@@ -47,26 +47,44 @@ in {
 
     services.openssh.enable = true;
 
-    services.dhcpd4 = {
+    services.kea.dhcp4 = {
       enable = true;
-      interfaces = [ "tap0" ];
-      extraConfig = let
-        joinedNameservers = lib.concatStringsSep "," config.networking.nameservers;
-      in ''
-        authoritative;
-        subnet ${subnetIP} netmask 255.255.255.0 {
-          option routers ${routerIP};
-          option broadcast-address ${broadcastIP};
-          option domain-name-servers ${joinedNameservers};
-
-          group {
-            host builder {
-              hardware ethernet ${config.macosGuest.guest.MACAddress};
-              fixed-address ${guestIP};
-            }
+      settings = {
+        interfaces-config = {
+          interfaces = [
+            "tap0"
+          ];
+          service-sockets-max-retries = 100;
+          service-sockets-retry-wait-time = 200;
+        };
+        authoritative = true;
+        subnet4 = [
+          {
+            subnet = "${subnetIP}/24";
+            option-data = [
+              {
+                name = "routers";
+                data = routerIP;
+              }
+              {
+                name = "broadcast-address";
+                data = broadcastIP;
+              }
+              {
+                name = "domain-name-servers";
+                data = lib.concatStringsSep "," config.networking.nameservers;
+              }
+            ];
+            reservations = [
+              {
+                hw-address = config.macosGuest.guest.MACAddress;
+                ip-address = guestIP;
+                hostname = "builder";
+              }
+            ];
           }
-        }
-      '';
+        ];
+      };
     };
 
     services.prometheus.exporters.node = {
