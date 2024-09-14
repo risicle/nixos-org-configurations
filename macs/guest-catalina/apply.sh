@@ -75,7 +75,7 @@ echo "%admin ALL = NOPASSWD: ALL" | tee /etc/sudoers.d/passwordless
       sleep 1
     done
 
-    curl -vL https://nixos.org/releases/nix/nix-2.18.1/install > ~nixos/install-nix
+    curl -vL https://nixos.org/releases/nix/nix-2.24.6/install > ~nixos/install-nix
     chmod +rwx ~nixos/install-nix
     cat /dev/null | sudo -i -H -u nixos -- sh ~nixos/install-nix --daemon --darwin-use-unencrypted-nix-store-volume
 )
@@ -97,11 +97,11 @@ echo "%admin ALL = NOPASSWD: ALL" | tee /etc/sudoers.d/passwordless
     # If me, Graham, the author of the multi-user darwin installer can't
     # even figure this out, how can I possibly expect anybody else to know.
     nix-channel --add https://github.com/LnL7/nix-darwin/archive/master.tar.gz darwin
-    nix-channel --add https://nixos.org/channels/nixpkgs-23.11-darwin nixpkgs
+    nix-channel --add https://nixos.org/channels/nixpkgs-24.05-darwin nixpkgs
     nix-channel --update
 
     sudo -i -H -u nixos -- nix-channel --add https://github.com/LnL7/nix-darwin/archive/master.tar.gz darwin
-    sudo -i -H -u nixos -- nix-channel --add https://nixos.org/channels/nixpkgs-23.11-darwin nixpkgs
+    sudo -i -H -u nixos -- nix-channel --add https://nixos.org/channels/nixpkgs-24.05-darwin nixpkgs
     sudo -i -H -u nixos -- nix-channel --update
 
     export NIX_PATH=nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixpkgs:darwin=https://github.com/LnL7/nix-darwin/archive/master.tar.gz
