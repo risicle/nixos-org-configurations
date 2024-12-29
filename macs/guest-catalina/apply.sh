@@ -104,11 +104,20 @@ echo "%admin ALL = NOPASSWD: ALL" | tee /etc/sudoers.d/passwordless
     sudo -i -H -u nixos -- nix-channel --add https://nixos.org/channels/nixpkgs-24.05-darwin nixpkgs
     sudo -i -H -u nixos -- nix-channel --update
 
-    export NIX_PATH=nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixpkgs:darwin=https://github.com/LnL7/nix-darwin/archive/master.tar.gz
+    NIXOS_HOME=~nixos
+    sudo -u nixos -- mkdir -p  $NIXOS_HOME/.nixpkgs
+    sudo -u nixos -- tee $NIXOS_HOME/.nixpkgs/darwin-configuration.nix <<EOF
+# an initial darwin-configuration.nix just for the first install
+{ config, pkgs, ... }:
+{
+  # Used for backwards compatibility, please read the changelog before changing.
+  # $ darwin-rebuild changelog
+  system.stateVersion = 5;
+}
+EOF
 
-    installer=$(nix-build https://github.com/LnL7/nix-darwin/archive/master.tar.gz -A installer --no-out-link)
     set +e
-    yes | sudo -i -H -u nixos -- $installer/bin/darwin-installer;
+    sudo -i -H -u nixos -- nix --extra-experimental-features flakes --extra-experimental-features nix-command run nix-darwin -- switch -I nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixpkgs -I darwin=https://github.com/LnL7/nix-darwin/archive/master.tar.gz -I darwin-config=${NIXOS_HOME}/.nixpkgs/darwin-configuration.nix;
     echo $?
     set -e
 )
