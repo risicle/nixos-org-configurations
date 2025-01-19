@@ -96,12 +96,12 @@ echo "%admin ALL = NOPASSWD: ALL" | tee /etc/sudoers.d/passwordless
     # channels on darwin are a bit ill defined and have a very bad UX.
     # If me, Graham, the author of the multi-user darwin installer can't
     # even figure this out, how can I possibly expect anybody else to know.
-    nix-channel --add https://github.com/LnL7/nix-darwin/archive/master.tar.gz darwin
-    nix-channel --add https://nixos.org/channels/nixpkgs-24.05-darwin nixpkgs
+    nix-channel --add https://github.com/LnL7/nix-darwin/archive/nix-darwin-24.11.tar.gz darwin
+    nix-channel --add https://nixos.org/channels/nixpkgs-24.11-darwin nixpkgs
     nix-channel --update
 
-    sudo -i -H -u nixos -- nix-channel --add https://github.com/LnL7/nix-darwin/archive/master.tar.gz darwin
-    sudo -i -H -u nixos -- nix-channel --add https://nixos.org/channels/nixpkgs-24.05-darwin nixpkgs
+    sudo -i -H -u nixos -- nix-channel --add https://github.com/LnL7/nix-darwin/archive/nix-darwin-24.11.tar.gz darwin
+    sudo -i -H -u nixos -- nix-channel --add https://nixos.org/channels/nixpkgs-24.11-darwin nixpkgs
     sudo -i -H -u nixos -- nix-channel --update
 
     NIXOS_HOME=~nixos
@@ -117,7 +117,7 @@ echo "%admin ALL = NOPASSWD: ALL" | tee /etc/sudoers.d/passwordless
 EOF
 
     set +e
-    sudo -i -H -u nixos -- nix --extra-experimental-features flakes --extra-experimental-features nix-command run nix-darwin -- switch -I nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixpkgs -I darwin=https://github.com/LnL7/nix-darwin/archive/master.tar.gz -I darwin-config=${NIXOS_HOME}/.nixpkgs/darwin-configuration.nix;
+    sudo -i -H -u nixos -- nix --extra-experimental-features flakes --extra-experimental-features nix-command run nix-darwin -- switch -I nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixpkgs -I darwin=https://github.com/LnL7/nix-darwin/archive/nix-darwin-24.11.tar.gz -I darwin-config=${NIXOS_HOME}/.nixpkgs/darwin-configuration.nix;
     echo $?
     set -e
 )
