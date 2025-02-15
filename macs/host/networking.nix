@@ -60,6 +60,7 @@ in {
         authoritative = true;
         subnet4 = [
           {
+            id = 1;
             subnet = "${subnetIP}/24";
             option-data = [
               {
