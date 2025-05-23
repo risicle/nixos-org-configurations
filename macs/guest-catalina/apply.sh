@@ -92,21 +92,12 @@ echo "%admin ALL = NOPASSWD: ALL" | tee /etc/sudoers.d/passwordless
     ls -la /private/var/run || true
     ln -s /private/var/run /run || true
 
-    # todo: clean up this channel business, which is complicated because
-    # channels on darwin are a bit ill defined and have a very bad UX.
-    # If me, Graham, the author of the multi-user darwin installer can't
-    # even figure this out, how can I possibly expect anybody else to know.
     nix-channel --add https://github.com/LnL7/nix-darwin/archive/nix-darwin-24.11.tar.gz darwin
     nix-channel --add https://nixos.org/channels/nixpkgs-24.11-darwin nixpkgs
     nix-channel --update
 
-    sudo -i -H -u nixos -- nix-channel --add https://github.com/LnL7/nix-darwin/archive/nix-darwin-24.11.tar.gz darwin
-    sudo -i -H -u nixos -- nix-channel --add https://nixos.org/channels/nixpkgs-24.11-darwin nixpkgs
-    sudo -i -H -u nixos -- nix-channel --update
-
-    NIXOS_HOME=~nixos
-    sudo -u nixos -- mkdir -p  $NIXOS_HOME/.nixpkgs
-    sudo -u nixos -- tee $NIXOS_HOME/.nixpkgs/darwin-configuration.nix <<EOF
+    mkdir -p  $HOME/.nixpkgs
+    tee $HOME/.nixpkgs/darwin-configuration.nix <<EOF
 # an initial darwin-configuration.nix just for the first install
 { config, pkgs, ... }:
 {
@@ -116,10 +107,7 @@ echo "%admin ALL = NOPASSWD: ALL" | tee /etc/sudoers.d/passwordless
 }
 EOF
 
-    set +e
-    sudo -i -H -u nixos -- nix --extra-experimental-features flakes --extra-experimental-features nix-command run nix-darwin -- switch -I nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixpkgs -I darwin=https://github.com/LnL7/nix-darwin/archive/nix-darwin-24.11.tar.gz -I darwin-config=${NIXOS_HOME}/.nixpkgs/darwin-configuration.nix;
-    echo $?
-    set -e
+    $(nix-build '<darwin>' -A darwin-rebuild --no-out-link)/bin/darwin-rebuild switch -I darwin-config=$HOME/.nixpkgs/darwin-configuration.nix
 )
 
 (
@@ -132,15 +120,15 @@ EOF
     . /etc/static/bashrc
     pushd /Volumes/CONFIG
     for f in *.nix ; do
-        cat $f | sudo -u nixos -- tee ~nixos/.nixpkgs/$f
+        cat $f | tee $HOME/.nixpkgs/$f
     done
     popd
 
-    while ! sudo -i -H -u nixos -- nix store ping --extra-experimental-features nix-command ; do
+    while ! nix store ping --extra-experimental-features nix-command ; do
         cat /var/log/nix-daemon.log
         sleep 1
     done
 
-    sudo -i -H -u nixos -- darwin-rebuild switch
+    $(nix-build '<darwin>' -A darwin-rebuild --no-out-link)/bin/darwin-rebuild switch
 )
 
