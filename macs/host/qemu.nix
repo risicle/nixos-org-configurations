@@ -52,9 +52,9 @@ in {
 
       script = let
         rootDriveArg = if zvolName != null then
-            "-drive id=MacHDD,cache=unsafe,if=none,file=${zvolDevice},format=raw"
+            "-drive id=MacHDD,aio=io_uring,cache=unsafe,if=none,file=${zvolDevice},format=raw"
           else
-            ("-drive id=MacHDD,cache=unsafe,if=none,file=$rootQcow2Path,format=qcow2" + lib.optionalString (persistentRootQcow2Path == null) ",snapshot=on");
+            ("-drive id=MacHDD,aio=io_uring,cache=unsafe,if=none,file=$rootQcow2Path,format=qcow2" + lib.optionalString (persistentRootQcow2Path == null) ",snapshot=on");
         configDriveArg = lib.optionalString nixify ''
           -device ide-cd,bus=ide.0,drive=config \
           -drive id=config,if=none,snapshot=on,media=cdrom,file=/tmp/config.iso \
