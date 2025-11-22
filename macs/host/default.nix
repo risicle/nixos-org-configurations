@@ -231,7 +231,7 @@ in {
           default = null;
         };
 
-        cloverImage = mkOption {
+        bootloaderImage = mkOption {
           type = types.path;
           default = (pkgs.callPackage ./clover.qcow2.nix {
             # 0x23 means allow dtrace and untrusted kexts
@@ -239,7 +239,7 @@ in {
             csrFlag = "0x23";
           }).clover-image;
           description = ''
-            Path to the Clover bootloader.
+            Path to the bootloader qcow2 image.
           '';
         };
 

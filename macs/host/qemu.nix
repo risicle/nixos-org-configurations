@@ -2,7 +2,7 @@
 { config, lib, pkgs, ... }:
 let
   inherit (config.macosGuest.guest) threads cores sockets memoryInMegs
-    ovmfCodeFile ovmfVarsFile persistentOvmfVarsPath cloverImage zvolName snapshotName
+    ovmfCodeFile ovmfVarsFile persistentOvmfVarsPath bootloaderImage zvolName snapshotName
     guestConfigDir persistentConfigDir rootQcow2 persistentRootQcow2Path nixify;
   inherit (lib) mkIf;
 
@@ -95,8 +95,8 @@ in {
             -smbios type=2 \
             -device ich9-intel-hda -device hda-duplex \
             -device ich9-ahci,id=sata \
-            -device ide-hd,bus=sata.2,drive=Clover \
-            -drive id=Clover,if=none,snapshot=on,format=qcow2,file='${cloverImage}' \
+            -device ide-hd,bus=sata.2,drive=Bootloader \
+            -drive id=Bootloader,if=none,snapshot=on,format=qcow2,file='${bootloaderImage}' \
             -device ide-hd,bus=sata.1,drive=MacHDD \
             ${rootDriveArg} \
             ${configDriveArg} \
