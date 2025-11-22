@@ -56,7 +56,7 @@ in {
           else
             ("-drive id=MacHDD,aio=io_uring,cache=unsafe,if=none,file=$rootQcow2Path,format=qcow2" + lib.optionalString (persistentRootQcow2Path == null) ",snapshot=on");
         configDriveArg = lib.optionalString nixify ''
-          -device ide-cd,bus=ide.0,drive=config \
+          -device ide-cd,bus=sata.0,drive=config \
           -drive id=config,if=none,snapshot=on,media=cdrom,file=/tmp/config.iso \
         '';
       in (if persistentOvmfVarsPath == null then "ovmfVarsFile=${ovmfVarsFile}\n" else ''
@@ -81,23 +81,26 @@ in {
         qemu-system-x86_64 \
             -s \
             -enable-kvm \
-            -cpu Penryn,kvm=on,vendor=GenuineIntel,+invtsc,vmware-cpuid-freq=on,+aes,+xsave,+avx,+xsaveopt,avx2,+smep \
-            -machine pc-q35-2.9 \
+            -cpu Haswell-noTSX,kvm=on,vendor=GenuineIntel,+invtsc,vmware-cpuid-freq=on,+ssse3,+sse4.2,+popcnt,+avx,+aes,+xsave,+xsaveopt,check \
+            -machine q35 \
             -smp cpus=${toString (cores * threads * sockets)},cores=${toString cores},threads=${toString threads},sockets=${toString sockets} \
             -m ${toString memoryInMegs} \
             -monitor telnet:0.0.0.0:4445,server=on,wait=off \
-            -usb -device usb-kbd -device usb-tablet \
+            -device qemu-xhci,id=xhci \
+            -device usb-kbd,bus=xhci.0 -device usb-tablet,bus=xhci.0 \
+            -device usb-ehci,id=ehci \
             -device isa-applesmc,osk="ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc" \
-            -drive if=pflash,format=raw,readonly,file=${ovmfCodeFile} \
+            -drive if=pflash,format=raw,readonly=on,file=${ovmfCodeFile} \
             -drive if=pflash,format=raw,file=$ovmfVarsPath \
             -smbios type=2 \
             -device ich9-intel-hda -device hda-duplex \
-            -device ide-hd,bus=ide.2,drive=Clover \
+            -device ich9-ahci,id=sata \
+            -device ide-hd,bus=sata.2,drive=Clover \
             -drive id=Clover,if=none,snapshot=on,format=qcow2,file='${cloverImage}' \
-            -device ide-hd,bus=ide.1,drive=MacHDD \
+            -device ide-hd,bus=sata.1,drive=MacHDD \
             ${rootDriveArg} \
             ${configDriveArg} \
-            -netdev tap,id=net0,ifname=tap0,script=no,downscript=no -device e1000-82545em,netdev=net0,id=net0,mac=${config.macosGuest.guest.MACAddress} \
+            -netdev tap,id=net0,ifname=tap0,script=no,downscript=no -device virtio-net-pci,netdev=net0,id=net0,mac=${config.macosGuest.guest.MACAddress} \
             -vnc 127.0.0.1:0 \
             -no-reboot
       '';
